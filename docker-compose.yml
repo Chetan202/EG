@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  # MySQL Database for User-Service and Notification-Service
+  mysql:
+    image: mysql:8.0
+    container_name: gws-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: user_service
+      MYSQL_USER: gwsapp
+      MYSQL_PASSWORD: GWSApp@123
+      TZ: 'UTC'
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
+    networks:
+      - gws-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+      interval: 10s
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+  # MySQL Admin UI (optional)
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: gws-phpmyadmin
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: gwsapp
+      PMA_PASSWORD: GWSApp@123
+      PMA_ROOT_PASSWORD: root
+    ports:
+      - "8888:80"
+    depends_on:
+      - mysql
+    networks:
+      - gws-network
+
+volumes:
+  mysql_data:
+
+networks:
+  gws-network:
+    driver: bridge
+
