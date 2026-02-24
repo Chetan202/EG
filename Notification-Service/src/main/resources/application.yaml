@@ -1,0 +1,83 @@
+server:
+  port: 8084
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: Notification-Service
+
+  # Email Configuration (update with your SMTP details)
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:your-email@gmail.com}
+    password: ${MAIL_PASSWORD:your-app-password}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+    default-encoding: UTF-8
+
+  # Async configuration
+  task:
+    execution:
+      thread-name-prefix: notification-
+      pool:
+        core-size: 5
+        max-size: 10
+        queue-capacity: 100
+      shutdown:
+        await-termination: true
+        await-termination-period: 30s
+
+  # RabbitMQ Configuration (optional)
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+# Notification Service Configuration
+notification:
+  from-email: noreply@yourcompany.com
+  reply-to-email: support@yourcompany.com
+  sms:
+    provider: none  # Can be: twilio, sns, nexmo, none (no-op)
+
+# User Service URL for FeignClient
+user-service:
+  url: http://localhost:8081
+
+# FeignClient Configuration
+feign:
+  client:
+    config:
+      user-service:
+        connect-timeout: 5000
+        read-timeout: 5000
+        loggerLevel: full
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000
+
+# Logging
+logging:
+  level:
+    root: INFO
+    com.pm.notificationservice: DEBUG
+    org.springframework.mail: DEBUG
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
